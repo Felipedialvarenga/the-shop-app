@@ -1,8 +1,9 @@
 import React from "react";
-import { FlatList } from "react-native";
+import { FlatList, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { ProductItem } from "../../components";
 import { addToCart } from "../../store/Cart";
+import { CartButton } from "./styles";
 
 const ProductsOverViewScreen = (props) => {
   const products = useSelector((state) => state.products.availableProducts);
@@ -37,8 +38,15 @@ const ProductsOverViewScreen = (props) => {
   );
 };
 
-ProductsOverViewScreen.navigationOptions = {
-  headerTitle: "All Products",
+ProductsOverViewScreen.navigationOptions = (navData) => {
+  return {
+    headerTitle: "All Products",
+    headerRight: () => (
+      <TouchableOpacity onPress={() => navData.navigation.navigate("Cart")}>
+        <CartButton>Cart</CartButton>
+      </TouchableOpacity>
+    ),
+  };
 };
 
 export default ProductsOverViewScreen;
