@@ -1,25 +1,40 @@
 import React from "react";
-import { Button } from "react-native";
+import { Button, TouchableOpacity } from "react-native";
+import Colors from "../../constants/Colors";
 import {
+  ImageContainer,
   ProductActions,
   ProductContainer,
+  ProductDetails,
   ProductImage,
   ProductPrice,
   ProductTitle,
 } from "./styles";
 
-const ProductItem = (props) => {
+export const ProductItem = (props) => {
   return (
-    <ProductContainer>
-      <ProductImage source={{ uri: props.image }} />
-      <ProductTitle>{props.title}</ProductTitle>
-      <ProductPrice>${props.price.toFixed(2)}</ProductPrice>
-      <ProductActions>
-        <Button title="View Details" onPress={props.onViewDetail} />
-        <Button title="To Cart" onPress={props.onAddToCart} />
-      </ProductActions>
-    </ProductContainer>
+    <TouchableOpacity onPress={props.onViewDetail}>
+      <ProductContainer>
+        <ImageContainer>
+          <ProductImage source={{ uri: props.image }} />
+        </ImageContainer>
+        <ProductDetails>
+          <ProductTitle>{props.title}</ProductTitle>
+          <ProductPrice>${props.price.toFixed(2)}</ProductPrice>
+        </ProductDetails>
+        <ProductActions>
+          <Button
+            title="View Details"
+            onPress={props.onViewDetail}
+            color={Colors.primary}
+          />
+          <Button
+            title="To Cart"
+            onPress={props.onAddToCart}
+            color={Colors.primary}
+          />
+        </ProductActions>
+      </ProductContainer>
+    </TouchableOpacity>
   );
 };
-
-export default ProductItem;
