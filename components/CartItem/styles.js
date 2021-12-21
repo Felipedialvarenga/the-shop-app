@@ -16,7 +16,7 @@ export const ItemData = styled.View`
 
 export const Quantity = styled.Text`
     font-family: 'open-sans';
-    color: #888;
+    color: '#888';
     font-size: 16px;
 `;
 

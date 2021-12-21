@@ -17,9 +17,11 @@ export const CartItem = (props) => {
       </ItemData>
       <ItemData>
         <MainText>${props.amount.toFixed(2)}</MainText>
-        <DeleteButton onPress={props.onRemove}>
-          <Ionicons name="ios-trash" size={23} color="red" />
-        </DeleteButton>
+        {props.deletable && (
+          <DeleteButton onPress={props.onRemove}>
+            <Ionicons name="ios-trash" size={23} color="red" />
+          </DeleteButton>
+        )}
       </ItemData>
     </ItemContainer>
   );

@@ -23,22 +23,20 @@ const ProductsOverViewScreen = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <FlatList
-        data={products}
-        renderItem={(itemData) => (
-          <ProductItem
-            image={itemData.item.imageUrl}
-            title={itemData.item.title}
-            price={itemData.item.price}
-            onViewDetail={() =>
-              viewDetailHandler(itemData.item.id, itemData.item.title)
-            }
-            onAddToCart={() => addToCartHandler(itemData.item)}
-          />
-        )}
-      />
-    </View>
+    <FlatList
+      data={products}
+      renderItem={(itemData) => (
+        <ProductItem
+          image={itemData.item.imageUrl}
+          title={itemData.item.title}
+          price={itemData.item.price}
+          onViewDetail={() =>
+            viewDetailHandler(itemData.item.id, itemData.item.title)
+          }
+          onAddToCart={() => addToCartHandler(itemData.item)}
+        />
+      )}
+    />
   );
 };
 

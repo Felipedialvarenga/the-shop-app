@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 export const ProductContainer = styled.View`
   box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
-  background-color: "white";
+  background-color: white;
   height: 300px;
   margin: 20px;
 `;
@@ -36,7 +36,7 @@ export const ProductTitle = styled.Text`
 export const ProductPrice = styled.Text`
   font-family: "open-sans";
   font-size: 14px;
-  color: #888;
+  color: gray;
 `;
 
 export const ProductActions = styled.View`
