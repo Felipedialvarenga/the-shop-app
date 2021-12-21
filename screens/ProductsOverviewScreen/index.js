@@ -1,7 +1,9 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { ProductItem } from "../../components";
+import { MenuBar } from "../../components/UI/MenuBar/styles";
 import { addToCart } from "../../store/Cart";
 import { CartButton } from "./styles";
 
@@ -21,29 +23,40 @@ const ProductsOverViewScreen = (props) => {
   };
 
   return (
-    <FlatList
-      data={products}
-      renderItem={(itemData) => (
-        <ProductItem
-          image={itemData.item.imageUrl}
-          title={itemData.item.title}
-          price={itemData.item.price}
-          onViewDetail={() =>
-            viewDetailHandler(itemData.item.id, itemData.item.title)
-          }
-          onAddToCart={() => addToCartHandler(itemData.item)}
-        />
-      )}
-    />
+    <View style={{ flex: 1 }}>
+      <FlatList
+        data={products}
+        renderItem={(itemData) => (
+          <ProductItem
+            image={itemData.item.imageUrl}
+            title={itemData.item.title}
+            price={itemData.item.price}
+            onViewDetail={() =>
+              viewDetailHandler(itemData.item.id, itemData.item.title)
+            }
+            onAddToCart={() => addToCartHandler(itemData.item)}
+          />
+        )}
+      />
+    </View>
   );
 };
 
 ProductsOverViewScreen.navigationOptions = (navData) => {
   return {
     headerTitle: "All Products",
+    headerLeft: () => (
+      <TouchableOpacity onPress={() => navData.navigation.toggleDrawer()}>
+        <MenuBar />
+        <MenuBar />
+        <MenuBar />
+      </TouchableOpacity>
+    ),
     headerRight: () => (
       <TouchableOpacity onPress={() => navData.navigation.navigate("Cart")}>
-        <CartButton>Cart</CartButton>
+        <CartButton>
+          <Ionicons name="md-cart" size={23} color="white" />
+        </CartButton>
       </TouchableOpacity>
     ),
   };

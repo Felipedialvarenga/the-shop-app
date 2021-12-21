@@ -27,7 +27,23 @@ export const cartSlice = createSlice({
       }
       state.totalAmount += addedProduct.price;
     },
+    removeFromCart: (state, { payload }) => {
+      const currentQty = state.items[payload].quantity;
+
+      if (currentQty > 1) {
+        state.items[payload].quantity--;
+        state.items[payload].sum -= state.items[payload].productPrice;
+        state.totalAmount -= state.items[payload].productPrice;
+      } else {
+        state.totalAmount -= state.items[payload].productPrice;
+        delete state.items[payload];
+      }
+    },
+    clearCart: (state) => {
+      state.items = {};
+      state.totalAmount = 0;
+    },
   },
 });
 
-export const { addToCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
