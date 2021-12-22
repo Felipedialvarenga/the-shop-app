@@ -43,7 +43,14 @@ export const cartSlice = createSlice({
       state.items = {};
       state.totalAmount = 0;
     },
+    deleteCartProduct: (state, { payload }) => {
+      if (state.items[payload]) {
+        state.totalAmount -= state.items[payload].sum;
+        delete state.items[payload];
+      }
+    },
   },
 });
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart, deleteCartProduct } =
+  cartSlice.actions;

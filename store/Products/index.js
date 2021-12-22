@@ -10,5 +10,16 @@ const initialState = {
 export const productsSlice = createSlice({
   name: "products",
   initialState,
-  reducers: {},
+  reducers: {
+    deleteProduct: (state, { payload }) => {
+      state.availableProducts = state.availableProducts.filter(
+        (prod) => prod.id !== payload
+      );
+      state.userProducts = state.userProducts.filter(
+        (prod) => prod.id !== payload
+      );
+    },
+  },
 });
+
+export const { deleteProduct } = productsSlice.actions;

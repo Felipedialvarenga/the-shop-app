@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { FlatList, TouchableOpacity, Button } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { ProductItem } from "../../components";
+import { HeaderRightButton, ProductItem } from "../../components";
 import { MenuBar } from "../../components/UI/MenuBar/styles";
 import { addToCart } from "../../store/Cart";
-import { CartButton } from "./styles";
+import Colors from "../../constants/Colors";
 
 const ProductsOverViewScreen = (props) => {
   const products = useSelector((state) => state.products.availableProducts);
@@ -30,11 +30,23 @@ const ProductsOverViewScreen = (props) => {
           image={itemData.item.imageUrl}
           title={itemData.item.title}
           price={itemData.item.price}
-          onViewDetail={() =>
+          onSelect={() =>
             viewDetailHandler(itemData.item.id, itemData.item.title)
           }
-          onAddToCart={() => addToCartHandler(itemData.item)}
-        />
+        >
+          <Button
+            title="View Details"
+            onPress={() =>
+              viewDetailHandler(itemData.item.id, itemData.item.title)
+            }
+            color={Colors.primary}
+          />
+          <Button
+            title="To Cart"
+            onPress={() => addToCartHandler(itemData.item)}
+            color={Colors.primary}
+          />
+        </ProductItem>
       )}
     />
   );
@@ -52,9 +64,9 @@ ProductsOverViewScreen.navigationOptions = (navData) => {
     ),
     headerRight: () => (
       <TouchableOpacity onPress={() => navData.navigation.navigate("Cart")}>
-        <CartButton>
+        <HeaderRightButton>
           <Ionicons name="md-cart" size={23} color="white" />
-        </CartButton>
+        </HeaderRightButton>
       </TouchableOpacity>
     ),
   };
