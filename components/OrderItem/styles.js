@@ -1,9 +1,7 @@
 import styled from "styled-components/native";
+import { Card } from "../UI/Card/styles";
 
-export const ItemContainer = styled.View`
-  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  background-color: white;
+export const ItemContainer = styled(Card)`
   padding: 10px;
   margin: 20px;
   align-items: center;

@@ -19,7 +19,44 @@ export const productsSlice = createSlice({
         (prod) => prod.id !== payload
       );
     },
+    createProduct: (state, { payload }) => {
+      const newProduct = {
+        id: new Date().toString(),
+        ownerId: "u1",
+        title: payload.title,
+        imageUrl: payload.imageUrl,
+        description: payload.description,
+        price: +payload.price,
+      };
+      state.userProducts = [...state.userProducts, newProduct];
+      state.availableProducts = [...state.availableProducts, newProduct];
+    },
+    updateProduct: (state, { payload }) => {
+      const userProdIdx = state.userProducts.findIndex(
+        (prod) => prod.id === payload.id
+      );
+
+      const availableProdIdx = state.availableProducts.findIndex(
+        (prod) => prod.id === payload.id
+      );
+
+      const updatedProdData = {
+        title: payload.title,
+        imageUrl: payload.imageUrl,
+        description: payload.description,
+      };
+
+      state.userProducts[userProdIdx] = {
+        ...state.userProducts[userProdIdx],
+        ...updatedProdData,
+      };
+
+      state.availableProducts[availableProdIdx] = {
+        ...state.userProducts[userProdIdx],
+      };
+    },
   },
 });
 
-export const { deleteProduct } = productsSlice.actions;
+export const { deleteProduct, createProduct, updateProduct } =
+  productsSlice.actions;

@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, TouchableOpacity, Button } from "react-native";
+import { FlatList, TouchableOpacity, Button, Alert } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { ProductItem, MenuBar, HeaderRightButton } from "../../components";
 import Colors from "../../constants/Colors";
@@ -13,6 +13,24 @@ const UserProductsScreen = (props) => {
 
   const editProductHandler = (id) => {
     props.navigation.navigate("EditProduct", { productId: id });
+  };
+
+  const deleteHandler = (id) => {
+    Alert.alert(
+      "Are you Sure?",
+      "Do you really want to delete permanently this item?",
+      [
+        { text: "No", style: "default" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: () => {
+            dispatch(deleteProduct(id));
+            dispatch(deleteCartProduct(id));
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -32,10 +50,7 @@ const UserProductsScreen = (props) => {
           />
           <Button
             title="Delete"
-            onPress={() => {
-              dispatch(deleteProduct(itemData.item.id));
-              dispatch(deleteCartProduct(itemData.item.id));
-            }}
+            onPress={() => deleteHandler(itemData.item.id)}
             color={Colors.primary}
           />
         </ProductItem>
