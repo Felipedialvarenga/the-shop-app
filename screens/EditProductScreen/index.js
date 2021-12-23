@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { TouchableOpacity, ScrollView } from "react-native";
+import React, { useCallback, useEffect, useReducer } from "react";
+import { TouchableOpacity, ScrollView, Alert, Text } from "react-native";
 import { HeaderRightButton } from "../../components";
 import { Form, FormControl, Input, Label } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { createProduct, updateProduct } from "../../store/Products";
+import { formReducer, FORM_UPDATE } from "../../utils";
 
 const EditProductScreen = (props) => {
   const prodId = props.navigation.getParam("productId");
@@ -13,27 +14,68 @@ const EditProductScreen = (props) => {
   );
   const dispatch = useDispatch();
 
-  const [title, setTitle] = useState(selectedProd ? selectedProd.title : "");
-  const [imageUrl, setImageUrl] = useState(
-    selectedProd ? selectedProd.imageUrl : ""
-  );
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState(
-    selectedProd ? selectedProd.description : ""
-  );
+  const [formState, dispatchFormState] = useReducer(formReducer, {
+    inputValues: {
+      title: selectedProd ? selectedProd.title : "",
+      imageUrl: selectedProd ? selectedProd.imageUrl : "",
+      description: selectedProd ? selectedProd.description : "",
+      price: "",
+    },
+    inputValidities: {
+      title: selectedProd ? true : false,
+      imageUrl: selectedProd ? true : false,
+      description: selectedProd ? true : false,
+      price: selectedProd ? true : false,
+    },
+    formIsValid: selectedProd ? true : false,
+  });
 
   const submitHandler = useCallback(() => {
+    if (!formState.formIsValid) {
+      Alert.alert("Wrong Input!", "Please check the errors in the form.", [
+        { text: "Okay" },
+      ]);
+      return;
+    }
+
     if (selectedProd) {
-      dispatch(updateProduct({ id: prodId, title, imageUrl, description }));
+      dispatch(
+        updateProduct({
+          id: prodId,
+          title: formState.inputValues.title,
+          imageUrl: formState.inputValues.imageUrl,
+          description: formState.inputValues.description,
+        })
+      );
     } else {
-      dispatch(createProduct({ title, imageUrl, description, price }));
+      dispatch(
+        createProduct({
+          title: formState.inputValues.title,
+          imageUrl: formState.inputValues.imageUrl,
+          description: formState.inputValues.description,
+          price: formState.inputValues.price,
+        })
+      );
     }
     props.navigation.goBack();
-  }, [dispatch, prodId, title, imageUrl, description, price]);
+  }, [dispatch, prodId, formState]);
 
   useEffect(() => {
     props.navigation.setParams({ submit: submitHandler });
   }, [submitHandler]);
+
+  const textChangeHandler = (input, text) => {
+    let isValid = false;
+    if (text.trim().length > 0) {
+      isValid = true;
+    }
+    dispatchFormState({
+      type: FORM_UPDATE,
+      value: text,
+      isValid,
+      input,
+    });
+  };
 
   return (
     <ScrollView>
@@ -41,33 +83,48 @@ const EditProductScreen = (props) => {
         <FormControl>
           <Label>Title</Label>
           <Input
-            value={title}
-            onChangeText={(text) => setTitle(text)}
+            value={formState.inputValues.title}
+            onChangeText={(text) => textChangeHandler("title", text)}
             keyboardType="default"
             autoCapitalize="sentences"
             autoCorrect
           />
+          {!formState.inputValidities.title && (
+            <Text>Please enter a valid text.</Text>
+          )}
         </FormControl>
         <FormControl>
           <Label>Image URL</Label>
-          <Input value={imageUrl} onChangeText={(text) => setImageUrl(text)} />
+          <Input
+            value={formState.inputValues.imageUrl}
+            onChangeText={(text) => textChangeHandler("imageUrl", text)}
+          />
+          {!formState.inputValidities.imageUrl && (
+            <Text>Please enter a valid image url.</Text>
+          )}
         </FormControl>
         {!selectedProd && (
           <FormControl>
             <Label>Price</Label>
             <Input
-              value={price}
-              onChangeText={(text) => setPrice(text)}
+              value={formState.inputValues.price}
+              onChangeText={(text) => textChangeHandler("price", text)}
               keyboardType="decimal-pad"
             />
+            {!formState.inputValidities.price && (
+              <Text>Please enter a valid price.</Text>
+            )}
           </FormControl>
         )}
         <FormControl>
           <Label>Description</Label>
           <Input
-            value={description}
-            onChangeText={(text) => setDescription(text)}
+            value={formState.inputValues.description}
+            onChangeText={(text) => textChangeHandler("description", text)}
           />
+          {!formState.inputValidities.description && (
+            <Text>Please enter a valid description.</Text>
+          )}
         </FormControl>
       </Form>
     </ScrollView>
