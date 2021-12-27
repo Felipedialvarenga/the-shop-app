@@ -1,15 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect } from "react";
 import { FlatList, TouchableOpacity, Button } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { HeaderRightButton, ProductItem } from "../../components";
 import { MenuBar } from "../../components/UI/MenuBar/styles";
 import { addToCart } from "../../store/Cart";
 import Colors from "../../constants/Colors";
+import { getProducts } from "../../store/Products";
 
 const ProductsOverViewScreen = (props) => {
   const products = useSelector((state) => state.products.availableProducts);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
 
   const viewDetailHandler = (productId, productTitle) => {
     props.navigation.navigate("ProductDetail", {

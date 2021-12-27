@@ -1,10 +1,61 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import PRODUCTS from "../../data/dummy-data";
 
+export const addProduct = createAsyncThunk(
+  "products/addProduct",
+  async (product, thunkAPI) => {
+    const response = await fetch(
+      "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...product }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(data);
+    if (response.ok) {
+      thunkAPI.dispatch(
+        createProduct({
+          id: data.name,
+          ownerId: "u1",
+          title: product.title,
+          imageUrl: product.imageUrl,
+          description: product.description,
+          price: +product.price,
+        })
+      );
+    }
+  }
+);
+
+export const getProducts = createAsyncThunk(
+  "products/getProducts",
+  async () => {
+    const response = await fetch(
+      "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json"
+    );
+    const data = await response.json();
+    const loadedProducts = [];
+    for (const key in data) {
+      loadedProducts.push({
+        ...data[key],
+        ownerId: "u1",
+        id: key,
+        price: +data[key].price,
+      });
+    }
+    return loadedProducts;
+  }
+);
+
 const initialState = {
-  availableProducts: PRODUCTS,
-  userProducts: PRODUCTS.filter((prod) => prod.ownerId === "u1"),
+  availableProducts: [],
+  userProducts: [],
 };
 
 export const productsSlice = createSlice({
@@ -20,16 +71,8 @@ export const productsSlice = createSlice({
       );
     },
     createProduct: (state, { payload }) => {
-      const newProduct = {
-        id: new Date().toString(),
-        ownerId: "u1",
-        title: payload.title,
-        imageUrl: payload.imageUrl,
-        description: payload.description,
-        price: +payload.price,
-      };
-      state.userProducts = [...state.userProducts, newProduct];
-      state.availableProducts = [...state.availableProducts, newProduct];
+      state.userProducts = [...state.userProducts, payload];
+      state.availableProducts = [...state.availableProducts, payload];
     },
     updateProduct: (state, { payload }) => {
       const userProdIdx = state.userProducts.findIndex(
@@ -54,6 +97,12 @@ export const productsSlice = createSlice({
       state.availableProducts[availableProdIdx] = {
         ...state.userProducts[userProdIdx],
       };
+    },
+  },
+  extraReducers: {
+    [getProducts.fulfilled]: (state, { payload }) => {
+      state.availableProducts = [...payload];
+      state.userProducts = payload.filter((prod) => prod.ownerId === "u1");
     },
   },
 });
