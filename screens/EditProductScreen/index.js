@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useReducer } from "react";
-import { TouchableOpacity, ScrollView, Alert, Text } from "react-native";
-import { HeaderRightButton } from "../../components";
-import { Form, FormControl, Input, Label } from "./styles";
+import {
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  KeyboardAvoidingView,
+} from "react-native";
+import { FormInput, HeaderRightButton } from "../../components";
+import { Form } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { createProduct, updateProduct } from "../../store/Products";
@@ -64,70 +69,80 @@ const EditProductScreen = (props) => {
     props.navigation.setParams({ submit: submitHandler });
   }, [submitHandler]);
 
-  const textChangeHandler = (input, text) => {
-    let isValid = false;
-    if (text.trim().length > 0) {
-      isValid = true;
-    }
-    dispatchFormState({
-      type: FORM_UPDATE,
-      value: text,
-      isValid,
-      input,
-    });
-  };
+  const inputChangeHandler = useCallback(
+    (input, inputValue, inputValidity) => {
+      dispatchFormState({
+        type: FORM_UPDATE,
+        value: inputValue,
+        isValid: inputValidity,
+        input,
+      });
+    },
+    [dispatchFormState]
+  );
 
   return (
-    <ScrollView>
-      <Form>
-        <FormControl>
-          <Label>Title</Label>
-          <Input
-            value={formState.inputValues.title}
-            onChangeText={(text) => textChangeHandler("title", text)}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior="padding"
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView>
+        <Form>
+          <FormInput
+            id="title"
+            label="Title"
+            errorText="Please enter a valid title!"
             keyboardType="default"
             autoCapitalize="sentences"
             autoCorrect
+            returnKeyType="next"
+            onInputChange={inputChangeHandler}
+            initialValue={selectedProd ? selectedProd.title : ""}
+            initallyValid={!!selectedProd}
+            required
           />
-          {!formState.inputValidities.title && (
-            <Text>Please enter a valid text.</Text>
-          )}
-        </FormControl>
-        <FormControl>
-          <Label>Image URL</Label>
-          <Input
-            value={formState.inputValues.imageUrl}
-            onChangeText={(text) => textChangeHandler("imageUrl", text)}
+          <FormInput
+            id="imageUrl"
+            label="Image Url"
+            errorText="Please enter a valid image url!"
+            keyboardType="default"
+            returnKeyType="next"
+            onInputChange={inputChangeHandler}
+            initialValue={selectedProd ? selectedProd.imageUrl : ""}
+            initallyValid={!!selectedProd}
+            required
           />
-          {!formState.inputValidities.imageUrl && (
-            <Text>Please enter a valid image url.</Text>
-          )}
-        </FormControl>
-        {!selectedProd && (
-          <FormControl>
-            <Label>Price</Label>
-            <Input
-              value={formState.inputValues.price}
-              onChangeText={(text) => textChangeHandler("price", text)}
+          {!selectedProd && (
+            <FormInput
+              id="price"
+              label="Price"
+              errorText="Please enter a valid price!"
               keyboardType="decimal-pad"
+              returnKeyType="next"
+              onInputChange={inputChangeHandler}
+              required
+              min={0.1}
             />
-            {!formState.inputValidities.price && (
-              <Text>Please enter a valid price.</Text>
-            )}
-          </FormControl>
-        )}
-        <FormControl>
-          <Label>Description</Label>
-          <Input
-            value={formState.inputValues.description}
-            onChangeText={(text) => textChangeHandler("description", text)}
-          />
-          {!formState.inputValidities.description && (
-            <Text>Please enter a valid description.</Text>
           )}
-        </FormControl>
-      </Form>
-    </ScrollView>
+          <FormInput
+            id="description"
+            label="Description"
+            errorText="Please enter a valid description!"
+            keyboardType="default"
+            autoCapitalize="sentences"
+            autoCorrect
+            multiline
+            numberOfLines={3}
+            onInputChange={inputChangeHandler}
+            initialValue={selectedProd ? selectedProd.description : ""}
+            initallyValid={!!selectedProd}
+            required
+            minLength={5}
+          />
+        </Form>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
