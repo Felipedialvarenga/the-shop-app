@@ -60,24 +60,29 @@ export const getProducts = createAsyncThunk(
 
 export const updateProduct = createAsyncThunk(
   "products/updateProducts",
-  async (productData) => {
-    const response = await fetch(
-      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productData.id}.json`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: productData.title,
-          description: productData.description,
-          imageUrl: productData.imageUrl,
-        }),
-      }
-    );
+  async (productData, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productData.id}.json`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: productData.title,
+            description: productData.description,
+            imageUrl: productData.imageUrl,
+          }),
+        }
+      );
 
-    if (response.ok) {
+      if (!response.ok) {
+        throw new Error("Something went wrong!");
+      }
       return productData;
+    } catch (err) {
+      return thunkAPI.rejectWithValue();
     }
   }
 );
@@ -85,15 +90,21 @@ export const updateProduct = createAsyncThunk(
 export const deleteProduct = createAsyncThunk(
   "products/deleteProducts",
   async (productId, thunkAPI) => {
-    const response = await fetch(
-      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productId}.json`,
-      {
-        method: "DELETE",
-      }
-    );
+    try {
+      const response = await fetch(
+        `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productId}.json`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    if (response.ok) {
+      if (!response.ok) {
+        throw new Error("Something went wrong!");
+      }
+
       return productId;
+    } catch (err) {
+      return thunkAPI.rejectWithValue();
     }
   }
 );
@@ -141,6 +152,9 @@ export const productsSlice = createSlice({
         ...state.userProducts[userProdIdx],
       };
     },
+    [updateProduct.rejected]: () => {
+      throw new Error("Something went wrong!");
+    },
     [deleteProduct.fulfilled]: (state, { payload }) => {
       state.availableProducts = state.availableProducts.filter(
         (prod) => prod.id !== payload
@@ -148,6 +162,9 @@ export const productsSlice = createSlice({
       state.userProducts = state.userProducts.filter(
         (prod) => prod.id !== payload
       );
+    },
+    [deleteProduct.rejected]: () => {
+      throw new Error("Something went wrong!");
     },
   },
 });

@@ -1,15 +1,30 @@
-import React from "react";
-import { FlatList, TouchableOpacity, Button, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  TouchableOpacity,
+  Button,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { ProductItem, MenuBar, HeaderRightButton } from "../../components";
 import Colors from "../../constants/Colors";
 import { deleteCartProduct } from "../../store/Cart";
 import { deleteProduct } from "../../store/Products";
 import { Ionicons } from "@expo/vector-icons";
+import { CenteredView } from "../EditProductScreen/styles";
 
 const UserProductsScreen = (props) => {
   const userProducts = useSelector((state) => state.products.userProducts);
+  const [error, setError] = useState();
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert("An error ocurred!", error, [{ text: "Okay" }]);
+    }
+  }, [error]);
 
   const editProductHandler = (id) => {
     props.navigation.navigate("EditProduct", { productId: id });
@@ -24,14 +39,29 @@ const UserProductsScreen = (props) => {
         {
           text: "Yes",
           style: "destructive",
-          onPress: () => {
-            dispatch(deleteProduct(id));
-            dispatch(deleteCartProduct(id));
+          onPress: async() => {
+            setError(null);
+            setIsLoading(true);
+            try {
+              await dispatch(deleteProduct(id));
+              await dispatch(deleteCartProduct(id));
+            } catch (err) {
+              setError(err.message);
+            }
+            setIsLoading(false);
           },
         },
       ]
     );
   };
+
+  if (isLoading) {
+    return (
+      <CenteredView>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </CenteredView>
+    );
+  }
 
   return (
     <FlatList
