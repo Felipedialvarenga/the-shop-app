@@ -1,19 +1,50 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect } from "react";
-import { FlatList, TouchableOpacity, Button } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  FlatList,
+  TouchableOpacity,
+  Button,
+  ActivityIndicator,
+  Text,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { HeaderRightButton, ProductItem } from "../../components";
 import { MenuBar } from "../../components/UI/MenuBar/styles";
 import { addToCart } from "../../store/Cart";
 import Colors from "../../constants/Colors";
 import { getProducts } from "../../store/Products";
+import { CenteredView } from "./styles";
 
 const ProductsOverViewScreen = (props) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
   const products = useSelector((state) => state.products.availableProducts);
   const dispatch = useDispatch();
 
+  const loadProducts = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      await dispatch(getProducts());
+    } catch (err) {
+      setError(err.message);
+    }
+    setIsLoading(false);
+  }, [dispatch, setIsLoading, setError]);
+
   useEffect(() => {
-    dispatch(getProducts());
+    const willFocusSub = props.navigation.addListener(
+      "willFocus",
+      loadProducts
+    );
+
+    return () => {
+      willFocusSub.remove();
+    };
+  }, [loadProducts]);
+
+  useEffect(() => {
+    loadProducts();
   }, [dispatch]);
 
   const viewDetailHandler = (productId, productTitle) => {
@@ -26,6 +57,35 @@ const ProductsOverViewScreen = (props) => {
   const addToCartHandler = (item) => {
     dispatch(addToCart(item));
   };
+
+  if (error) {
+    return (
+      <CenteredView>
+        <Text>An error ocurred!</Text>
+        <Button
+          title="Try Again"
+          onPress={loadProducts}
+          color={Colors.primary}
+        />
+      </CenteredView>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <CenteredView>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </CenteredView>
+    );
+  }
+
+  if (!isLoading && products.length === 0) {
+    return (
+      <CenteredView>
+        <Text>No products found. Maybe try adding some!</Text>
+      </CenteredView>
+    );
+  }
 
   return (
     <FlatList

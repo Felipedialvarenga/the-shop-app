@@ -1,7 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import PRODUCTS from "../../data/dummy-data";
-
 export const addProduct = createAsyncThunk(
   "products/addProduct",
   async (product, thunkAPI) => {
@@ -17,7 +15,6 @@ export const addProduct = createAsyncThunk(
     );
 
     const data = await response.json();
-    console.log(data);
     if (response.ok) {
       thunkAPI.dispatch(
         createProduct({
@@ -36,20 +33,68 @@ export const addProduct = createAsyncThunk(
 export const getProducts = createAsyncThunk(
   "products/getProducts",
   async () => {
-    const response = await fetch(
-      "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json"
-    );
-    const data = await response.json();
-    const loadedProducts = [];
-    for (const key in data) {
-      loadedProducts.push({
-        ...data[key],
-        ownerId: "u1",
-        id: key,
-        price: +data[key].price,
-      });
+    try {
+      const response = await fetch(
+        "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Something went wrong!");
+      }
+
+      const loadedProducts = [];
+      for (const key in data) {
+        loadedProducts.push({
+          ...data[key],
+          ownerId: "u1",
+          id: key,
+          price: +data[key].price,
+        });
+      }
+      return loadedProducts;
+    } catch (err) {
+      return err;
     }
-    return loadedProducts;
+  }
+);
+
+export const updateProduct = createAsyncThunk(
+  "products/updateProducts",
+  async (productData) => {
+    const response = await fetch(
+      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productData.id}.json`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: productData.title,
+          description: productData.description,
+          imageUrl: productData.imageUrl,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      return productData;
+    }
+  }
+);
+
+export const deleteProduct = createAsyncThunk(
+  "products/deleteProducts",
+  async (productId, thunkAPI) => {
+    const response = await fetch(
+      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productId}.json`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (response.ok) {
+      return productId;
+    }
   }
 );
 
@@ -62,19 +107,17 @@ export const productsSlice = createSlice({
   name: "products",
   initialState,
   reducers: {
-    deleteProduct: (state, { payload }) => {
-      state.availableProducts = state.availableProducts.filter(
-        (prod) => prod.id !== payload
-      );
-      state.userProducts = state.userProducts.filter(
-        (prod) => prod.id !== payload
-      );
-    },
     createProduct: (state, { payload }) => {
       state.userProducts = [...state.userProducts, payload];
       state.availableProducts = [...state.availableProducts, payload];
     },
-    updateProduct: (state, { payload }) => {
+  },
+  extraReducers: {
+    [getProducts.fulfilled]: (state, { payload }) => {
+      state.availableProducts = [...payload];
+      state.userProducts = payload.filter((prod) => prod.ownerId === "u1");
+    },
+    [updateProduct.fulfilled]: (state, { payload }) => {
       const userProdIdx = state.userProducts.findIndex(
         (prod) => prod.id === payload.id
       );
@@ -98,14 +141,15 @@ export const productsSlice = createSlice({
         ...state.userProducts[userProdIdx],
       };
     },
-  },
-  extraReducers: {
-    [getProducts.fulfilled]: (state, { payload }) => {
-      state.availableProducts = [...payload];
-      state.userProducts = payload.filter((prod) => prod.ownerId === "u1");
+    [deleteProduct.fulfilled]: (state, { payload }) => {
+      state.availableProducts = state.availableProducts.filter(
+        (prod) => prod.id !== payload
+      );
+      state.userProducts = state.userProducts.filter(
+        (prod) => prod.id !== payload
+      );
     },
   },
 });
 
-export const { deleteProduct, createProduct, updateProduct } =
-  productsSlice.actions;
+export const { createProduct } = productsSlice.actions;

@@ -9,7 +9,7 @@ import { FormInput, HeaderRightButton } from "../../components";
 import { Form } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
-import { addProduct, createProduct, updateProduct } from "../../store/Products";
+import { addProduct, updateProduct } from "../../store/Products";
 import { formReducer, FORM_UPDATE } from "../../utils";
 
 const EditProductScreen = (props) => {
