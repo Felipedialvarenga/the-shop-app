@@ -12,7 +12,6 @@ import { CartItem } from "../CartItem";
 
 export const OrderItem = (props) => {
   const [showDetails, setShowDetails] = useState(false);
-
   const orderDate = props.date.toLocaleDateString("en-EN", {
     year: "numeric",
     month: "long",
@@ -24,7 +23,7 @@ export const OrderItem = (props) => {
   return (
     <ItemContainer>
       <Summary>
-        <TotalAmount>${props.amount.toFixed(2)}</TotalAmount>
+        <TotalAmount>${+props.amount.toFixed(2)}</TotalAmount>
         <OrderDate>{orderDate}</OrderDate>
       </Summary>
       <Button
