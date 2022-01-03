@@ -4,7 +4,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  Button
+  Button,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { OrderItem } from "../../components";
@@ -15,6 +15,7 @@ import { CenteredView } from "../EditProductScreen/styles";
 
 const OrdersScreen = (props) => {
   const orders = useSelector((state) => state.orders.orders);
+  const userId = useSelector((state) => state.auth.userId);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -23,7 +24,7 @@ const OrdersScreen = (props) => {
     setError(null);
     setIsLoading(true);
     try {
-      await dispatch(getOrders());
+      await dispatch(getOrders(userId));
     } catch (err) {
       setError(err.message);
     }

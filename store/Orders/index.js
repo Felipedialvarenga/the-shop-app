@@ -4,9 +4,11 @@ export const addOrder = createAsyncThunk(
   "orders/addOrder",
   async (orderData, thunkAPI) => {
     const orderDate = new Date();
+    const token = thunkAPI.getState().auth.token;
+    const userId = thunkAPI.getState().auth.userId;
     try {
       const response = await fetch(
-        `https://projetomobile-cf839-default-rtdb.firebaseio.com/orders/u1.json`,
+        `https://projetomobile-cf839-default-rtdb.firebaseio.com/orders/${userId}.json?auth=${token}`,
         {
           method: "POST",
           headers: {
@@ -34,29 +36,32 @@ export const addOrder = createAsyncThunk(
   }
 );
 
-export const getOrders = createAsyncThunk("orders/getOrders", async () => {
-  try {
-    const response = await fetch(
-      "https://projetomobile-cf839-default-rtdb.firebaseio.com/orders/u1.json"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error("Something went wrong!");
-    }
+export const getOrders = createAsyncThunk(
+  "orders/getOrders",
+  async (userId) => {
+    try {
+      const response = await fetch(
+        `https://projetomobile-cf839-default-rtdb.firebaseio.com/orders/${userId}.json`
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Something went wrong!");
+      }
 
-    const loadedOrders = [];
-    for (const key in data) {
-      loadedOrders.push({
-        ...data[key],
-        date: new Date(data[key].date),
-        id: key,
-      });
+      const loadedOrders = [];
+      for (const key in data) {
+        loadedOrders.push({
+          ...data[key],
+          date: new Date(data[key].date),
+          id: key,
+        });
+      }
+      return loadedOrders;
+    } catch (err) {
+      return err;
     }
-    return loadedOrders;
-  } catch (err) {
-    return err;
   }
-});
+);
 
 const initialState = {
   orders: [],

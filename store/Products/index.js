@@ -3,14 +3,16 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 export const addProduct = createAsyncThunk(
   "products/addProduct",
   async (product, thunkAPI) => {
+    const token = thunkAPI.getState().auth.token;
+    const userId = thunkAPI.getState().auth.userId;
     const response = await fetch(
-      "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json",
+      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json?auth=${token}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...product }),
+        body: JSON.stringify({ ...product, ownerId: userId }),
       }
     );
 
@@ -19,7 +21,7 @@ export const addProduct = createAsyncThunk(
       thunkAPI.dispatch(
         createProduct({
           id: data.name,
-          ownerId: "u1",
+          ownerId: userId,
           title: product.title,
           imageUrl: product.imageUrl,
           description: product.description,
@@ -32,7 +34,7 @@ export const addProduct = createAsyncThunk(
 
 export const getProducts = createAsyncThunk(
   "products/getProducts",
-  async () => {
+  async (userId) => {
     try {
       const response = await fetch(
         "https://projetomobile-cf839-default-rtdb.firebaseio.com/products.json"
@@ -46,12 +48,11 @@ export const getProducts = createAsyncThunk(
       for (const key in data) {
         loadedProducts.push({
           ...data[key],
-          ownerId: "u1",
           id: key,
           price: +data[key].price,
         });
       }
-      return loadedProducts;
+      return { products: loadedProducts, userId };
     } catch (err) {
       return err;
     }
@@ -61,51 +62,47 @@ export const getProducts = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
   "products/updateProducts",
   async (productData, thunkAPI) => {
-    try {
-      const response = await fetch(
-        `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productData.id}.json`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: productData.title,
-            description: productData.description,
-            imageUrl: productData.imageUrl,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Something went wrong!");
+    const token = thunkAPI.getState().auth.token;
+    const response = await fetch(
+      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productData.id}.json?auth=${token}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: productData.title,
+          description: productData.description,
+          imageUrl: productData.imageUrl,
+        }),
       }
-      return productData;
-    } catch (err) {
-      return thunkAPI.rejectWithValue();
+    );
+
+    if (!response.ok) {
+      const errorInfo = await response.json();
+      throw new Error(errorInfo.error);
     }
+    return productData;
   }
 );
 
 export const deleteProduct = createAsyncThunk(
   "products/deleteProducts",
   async (productId, thunkAPI) => {
-    try {
-      const response = await fetch(
-        `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productId}.json`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Something went wrong!");
+    const token = thunkAPI.getState().auth.token;
+    const response = await fetch(
+      `https://projetomobile-cf839-default-rtdb.firebaseio.com/products/${productId}.json?auth=${token}`,
+      {
+        method: "DELETE",
       }
+    );
 
-      return productId;
-    } catch (err) {
-      return thunkAPI.rejectWithValue();
+    if (!response.ok) {
+      const errorInfo = await response.json();
+      throw new Error(errorInfo.error);
     }
+
+    return productId;
   }
 );
 
@@ -125,8 +122,10 @@ export const productsSlice = createSlice({
   },
   extraReducers: {
     [getProducts.fulfilled]: (state, { payload }) => {
-      state.availableProducts = [...payload];
-      state.userProducts = payload.filter((prod) => prod.ownerId === "u1");
+      state.availableProducts = [...payload.products];
+      state.userProducts = payload.products.filter(
+        (prod) => prod.ownerId === payload.userId
+      );
     },
     [updateProduct.fulfilled]: (state, { payload }) => {
       const userProdIdx = state.userProducts.findIndex(
@@ -152,8 +151,8 @@ export const productsSlice = createSlice({
         ...state.userProducts[userProdIdx],
       };
     },
-    [updateProduct.rejected]: () => {
-      throw new Error("Something went wrong!");
+    [updateProduct.rejected]: (state, action) => {
+      throw new Error(action.error.message);
     },
     [deleteProduct.fulfilled]: (state, { payload }) => {
       state.availableProducts = state.availableProducts.filter(
@@ -164,7 +163,7 @@ export const productsSlice = createSlice({
       );
     },
     [deleteProduct.rejected]: () => {
-      throw new Error("Something went wrong!");
+      throw new Error(action.error.message);
     },
   },
 });

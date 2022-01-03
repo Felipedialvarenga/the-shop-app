@@ -21,12 +21,13 @@ const ProductsOverViewScreen = (props) => {
   const [error, setError] = useState();
   const products = useSelector((state) => state.products.availableProducts);
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.auth.userId);
 
   const loadProducts = useCallback(async () => {
     setError(null);
     setIsRefreshing(true);
     try {
-      await dispatch(getProducts());
+      await dispatch(getProducts(userId));
     } catch (err) {
       setError(err.message);
     }

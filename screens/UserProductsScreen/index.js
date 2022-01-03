@@ -5,6 +5,7 @@ import {
   Button,
   Alert,
   ActivityIndicator,
+  Text,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { ProductItem, MenuBar, HeaderRightButton } from "../../components";
@@ -39,7 +40,7 @@ const UserProductsScreen = (props) => {
         {
           text: "Yes",
           style: "destructive",
-          onPress: async() => {
+          onPress: async () => {
             setError(null);
             setIsLoading(true);
             try {
@@ -59,6 +60,14 @@ const UserProductsScreen = (props) => {
     return (
       <CenteredView>
         <ActivityIndicator size="large" color={Colors.primary} />
+      </CenteredView>
+    );
+  }
+
+  if (!userProducts.length) {
+    return (
+      <CenteredView>
+        <Text>No products found, maybe start creating some!</Text>
       </CenteredView>
     );
   }
