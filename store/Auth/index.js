@@ -1,4 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const saveDataToStorage = (token, userId, expiryDate) => {
+  AsyncStorage.setItem(
+    "userData",
+    JSON.stringify({ token, userId, expiryDate: expiryDate.toISOString() })
+  );
+};
 
 export const signup = createAsyncThunk(
   "auth/signup",
@@ -23,6 +31,14 @@ export const signup = createAsyncThunk(
       }
       throw new Error(errorMsg);
     }
+
+    const token = data.idToken;
+    const userId = data.localId;
+    thunkAPI.dispatch(authenticate({ token, userId }));
+    const expiryDate = new Date(
+      new Date().getTime() + parseInt(data.expiresIn) * 1000
+    );
+    saveDataToStorage(token, userId, expiryDate);
 
     return data;
   }
@@ -54,9 +70,13 @@ export const login = createAsyncThunk(
       throw new Error(errorMsg);
     }
 
-    thunkAPI.dispatch(
-      authenticate({ token: data.idToken, userId: data.localId })
+    const token = data.idToken;
+    const userId = data.localId;
+    thunkAPI.dispatch(authenticate({ token, userId }));
+    const expiryDate = new Date(
+      new Date().getTime() + parseInt(data.expiresIn) * 1000
     );
+    saveDataToStorage(token, userId, expiryDate);
 
     return data;
   }
