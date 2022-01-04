@@ -8,6 +8,23 @@ const saveDataToStorage = (token, userId, expiryDate) => {
   );
 };
 
+let timer;
+
+const clearLogoutTimer = () => {
+  if (timer) {
+    clearTimeout(timer);
+  }
+};
+
+export const setLogoutTimer = createAsyncThunk(
+  "auth/setLogoutTimer",
+  (expirationTime, thunkAPI) => {
+    timer = setTimeout(() => {
+      thunkAPI.dispatch(logout());
+    }, expirationTime);
+  }
+);
+
 export const signup = createAsyncThunk(
   "auth/signup",
   async (userData, thunkAPI) => {
@@ -34,7 +51,13 @@ export const signup = createAsyncThunk(
 
     const token = data.idToken;
     const userId = data.localId;
-    thunkAPI.dispatch(authenticate({ token, userId }));
+    thunkAPI.dispatch(
+      authenticate({
+        token,
+        userId,
+        expiryTime: parseInt(data.expiresIn) * 1000,
+      })
+    );
     const expiryDate = new Date(
       new Date().getTime() + parseInt(data.expiresIn) * 1000
     );
@@ -72,13 +95,29 @@ export const login = createAsyncThunk(
 
     const token = data.idToken;
     const userId = data.localId;
-    thunkAPI.dispatch(authenticate({ token, userId }));
+    thunkAPI.dispatch(
+      authenticate({
+        token,
+        userId,
+        expiryTime: parseInt(data.expiresIn) * 1000,
+      })
+    );
     const expiryDate = new Date(
       new Date().getTime() + parseInt(data.expiresIn) * 1000
     );
     saveDataToStorage(token, userId, expiryDate);
 
     return data;
+  }
+);
+
+export const authenticate = createAsyncThunk(
+  "auth/authenticate",
+  (authData, thunkAPI) => {
+    thunkAPI.dispatch(setLogoutTimer(authData.expiryTime));
+    thunkAPI.dispatch(
+      authUser({ token: authData.token, userId: authData.userId })
+    );
   }
 );
 
@@ -91,11 +130,17 @@ export const AuthSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    authenticate: (state, { payload }) => {
+    authUser: (state, { payload }) => {
       state.token = payload.token;
       state.userId = payload.userId;
+    },
+    logout: (state) => {
+      AsyncStorage.removeItem("userData");
+      clearLogoutTimer();
+      state.token = null;
+      state.userId = null;
     },
   },
 });
 
-export const { authenticate } = AuthSlice.actions;
+export const { authUser, logout } = AuthSlice.actions;

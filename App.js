@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Provider } from "react-redux";
 import { store } from "./store";
-import ShopNavigator from "./navigation/ShopNavigator";
 import AppLoading from "expo-app-loading";
+import NavigationContainer from "./navigation/NavigationContainer";
 import * as Font from "expo-font";
 
 const fetchFonts = () => {
@@ -29,7 +29,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <ShopNavigator />
+      <NavigationContainer />
     </Provider>
   );
 }
